@@ -1,6 +1,36 @@
 import * as vscode from 'vscode';
 
 /**
+ * Splits a line into words.
+ */
+export function splitWords(line: string): string[] {
+	const tokens = line.split(/\s+/);
+
+	let words: string[] = [];
+	let i = 0;
+	while (i < tokens.length) {
+		const idxOpen = tokens[i].indexOf('[');
+		if (idxOpen === -1) {
+			words.push(tokens[i++]);
+		} else {
+			let bigWord = '';
+			let nextWord = tokens[i];
+			for (;;) {
+				bigWord += ' ' + nextWord;
+				if (i >= tokens.length || nextWord.indexOf(')') !== -1) {
+					break;
+				}
+				nextWord = tokens[++i];
+			}
+			words.push(bigWord.substr(1));
+			++i;
+		}
+	}
+
+	return words;
+};
+
+/**
  * In the current document, retrieves whether tab is being used, and the tab
  * size.
  */

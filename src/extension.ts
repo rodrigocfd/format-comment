@@ -53,10 +53,10 @@ export function deactivate() {};
 			return [];
 		}
 
-		const words = line.split(/\s+/).map((word, idx) => {
+		const words = util.splitWords(line).map((word, idx) => {
 			if (idx === 0) {
-				const commPrefix = util.commentSlashes(word);
-				const wordNoPrefix = word.substr(commPrefix.length);
+				const slashesPrefix = util.commentSlashes(word);
+				const wordNoPrefix = word.substr(slashesPrefix.length);
 				return wordNoPrefix;
 			}
 			return word;

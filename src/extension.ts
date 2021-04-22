@@ -33,23 +33,48 @@ export function activate(context: vscode.ExtensionContext) {
 			const idxFirstLine = editor.selection.start.line;
 			const idxLastLine = editor.selection.end.line;
 			const words = getWords(document, idxFirstLine, idxLastLine);
-			const [linePrefix, numPrefixChars] = util.linePrefix(document.lineAt(idxFirstLine).text);
+			const linePrefix = util.linePrefix(document.lineAt(idxFirstLine).text);
 			const eol = util.eol(document);
+			const maxLen = 80;
 
-			let finalStr = '';
-			for (let i = 0; i < words.length; ++i) {
-				let lineLen = linePrefix.length;
-				finalStr += linePrefix + words[i];
-				if (i < words.length - 1) finalStr += eol;
+			let finalLines: string[] = [];
+			let i = 0;
+			while (i < words.length) {
+				let curLine = linePrefix;
+				let k = i;
+				for (;;) {
+					curLine += ' ' + words[k];
+					const renderLen = curLine.replace(/\t/g, ' '.repeat(4)).length;
+					if (k >= words.length || renderLen > maxLen) break;
+					++k;
+				}
+
+				let numWords = k - i + 1;
+				if (numWords === 1) {
+					finalLines.push(curLine);
+				} else {
+					--numWords;
+					curLine = linePrefix;
+					for (let n = 0; n < numWords; ++n) {
+						curLine += ' ' + words[i + n];
+					}
+					finalLines.push(curLine);
+				}
+
+				i += numWords;
 			}
-
-			console.log(numPrefixChars);
 
 			let targetSel = new vscode.Selection(
 				new vscode.Position(idxFirstLine, 0),
 				new vscode.Position(idxLastLine, document.lineAt(idxLastLine).text.length),
 			);
-			editor.edit(b => b.replace(targetSel, finalStr));
+			editor.edit(b => b.replace(targetSel, finalLines.join(eol)));
+
+			editor.selection = new vscode.Selection(
+				new vscode.Position(idxFirstLine, finalLines[0].indexOf('//')),
+				new vscode.Position(idxFirstLine + finalLines.length,
+					finalLines[finalLines.length - 1].length),
+			);
 		}
 	});
 

@@ -27,10 +27,9 @@ export function tabInfo(): [boolean, number] {
 };
 
 /**
- * Returns the prefix of a line, including identation and comment slashes; and
- * the rendered number of chars of this prefix.
+ * Returns the identation and the slashes of a comment line.
  */
-export function linePrefix(line: string): [string, number] {
+export function linePrefix(line: string): string {
 	const [useTabs, tabSize] = tabInfo();
 	const slashes = commentSlashes(line);
 
@@ -39,10 +38,7 @@ export function linePrefix(line: string): [string, number] {
 		let i = 0;
 		while (line[i++] === '\t') ++numTabs;
 
-		return [
-			'\t'.repeat(numTabs) + slashes + ' ',
-			numTabs * 4 + (slashes + ' ').length,
-		];
+		return '\t'.repeat(numTabs) + slashes;
 
 	} else {
 		let numSpaces = 0;
@@ -50,10 +46,7 @@ export function linePrefix(line: string): [string, number] {
 		while (line[i++] === ' ') ++numSpaces;
 		let numTabs = (numSpaces - (numSpaces % tabSize)) / tabSize;
 
-		return [
-			' '.repeat(numTabs * tabSize) + slashes + ' ',
-			numTabs * tabSize + (slashes + ' ').length,
-		];
+		return ' '.repeat(numTabs * tabSize) + slashes;
 	}
 };
 

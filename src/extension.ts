@@ -15,7 +15,7 @@ function getWords(document: vscode.TextDocument, idxFirstLine: number, idxLastLi
 
 		words = words.concat(line.split(/\s+/).map((word, idx) => {
 			if (idx === 0) {
-				const commPrefix = util.commentPrefix(word);
+				const commPrefix = util.commentSlashes(word);
 				const wordNoPrefix = word.substr(commPrefix.length);
 				return wordNoPrefix;
 			}
@@ -33,15 +33,17 @@ export function activate(context: vscode.ExtensionContext) {
 			const idxFirstLine = editor.selection.start.line;
 			const idxLastLine = editor.selection.end.line;
 			const words = getWords(document, idxFirstLine, idxLastLine);
-			const linePrefix = util.linePrefix(document.lineAt(idxFirstLine).text);
+			const [linePrefix, numPrefixChars] = util.linePrefix(document.lineAt(idxFirstLine).text);
 			const eol = util.eol(document);
 
 			let finalStr = '';
-			for (const word of words) {
-				finalStr += linePrefix + word + eol;
+			for (let i = 0; i < words.length; ++i) {
+				let lineLen = linePrefix.length;
+				finalStr += linePrefix + words[i];
+				if (i < words.length - 1) finalStr += eol;
 			}
 
-			console.log(finalStr);
+			console.log(numPrefixChars);
 
 			let targetSel = new vscode.Selection(
 				new vscode.Position(idxFirstLine, 0),

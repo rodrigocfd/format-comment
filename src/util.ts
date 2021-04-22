@@ -14,11 +14,12 @@ export function tabInfo(): [boolean, number] {
 };
 
 /**
- * Returns the comment prefix string, among the supported prefixes.
+ * Returns the comment prefix slashes, among the supported prefixes.
  */
- export function commentPrefix(line: string): string {
+ export function commentSlashes(line: string): string {
+	const lineTr = line.trimLeft()
 	for (const prefix of ['//!', '///', '//']) {
-		if (line.startsWith(prefix)) {
+		if (lineTr.startsWith(prefix)) {
 			return prefix;
 		}
 	}
@@ -26,17 +27,22 @@ export function tabInfo(): [boolean, number] {
 };
 
 /**
- * Returns the prefix of a line, including identation and comment slashes.
+ * Returns the prefix of a line, including identation and comment slashes; and
+ * the rendered number of chars of this prefix.
  */
-export function linePrefix(line: string): string {
+export function linePrefix(line: string): [string, number] {
 	const [useTabs, tabSize] = tabInfo();
+	const slashes = commentSlashes(line);
 
 	if (useTabs) {
 		let numTabs = 0;
 		let i = 0;
 		while (line[i++] === '\t') ++numTabs;
 
-		return '\t'.repeat(numTabs) + commentPrefix(line) + ' ';
+		return [
+			'\t'.repeat(numTabs) + slashes + ' ',
+			numTabs * 4 + (slashes + ' ').length,
+		];
 
 	} else {
 		let numSpaces = 0;
@@ -44,7 +50,10 @@ export function linePrefix(line: string): string {
 		while (line[i++] === ' ') ++numSpaces;
 		let numTabs = (numSpaces - (numSpaces % tabSize)) / tabSize;
 
-		return ' '.repeat(numTabs * tabSize) + commentPrefix(line) + ' ';
+		return [
+			' '.repeat(numTabs * tabSize) + slashes + ' ',
+			numTabs * tabSize + (slashes + ' ').length,
+		];
 	}
 };
 

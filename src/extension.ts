@@ -1,9 +1,12 @@
 import * as vscode from 'vscode';
 import * as util from './util';
 
-function getWords(document: vscode.TextDocument, selection: vscode.Selection): string[] {
+/**
+ * Splits the selected lines into words.
+ */
+function getWords(document: vscode.TextDocument, idxFirstLine: number, idxLastLine: number): string[] {
 	let words: string[] = [];
-	for (let i = selection.start.line; i <= selection.end.line; ++i) {
+	for (let i = idxFirstLine; i <= idxLastLine; ++i) {
 		const line = document.lineAt(i).text.trimLeft();
 		if (!line.startsWith('//')) {
 			vscode.window.showErrorMessage(`Line ${i + 1} is not a comment.`);
@@ -26,13 +29,23 @@ export function activate(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('comment-formatter.formatComment', () => {
 		const editor = vscode.window.activeTextEditor;
 		if (editor) {
-
 			const document = editor.document;
-			const words = getWords(document, editor.selection);
+			const idxFirstLine = editor.selection.start.line;
+			const idxLastLine = editor.selection.end.line;
+			const words = getWords(document, idxFirstLine, idxLastLine);
+			const linePrefix = util.linePrefix(document.lineAt(idxFirstLine).text);
 
-			const numIdent = util.countIdents(document.lineAt(editor.selection.start.line).text);
+			for (const word of words) {
+				console.log(linePrefix + word);
+			}
 
-			console.log(numIdent, words);
+			// let targetSel = new vscode.Selection(
+			// 	new vscode.Position(idxFirstLine, 0),
+			// 	new vscode.Position(idxLastLine, document.lineAt(idxLastLine).text.length),
+			// );
+			// editor.edit(b => {
+			// 	b.replace(targetSel, 'xxxx' + document.eol + 'xxx');
+			// });
 		}
 	});
 

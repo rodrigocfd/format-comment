@@ -14,34 +14,36 @@ export function tabInfo(): [boolean, number] {
 };
 
 /**
- * Retrieves the number of idents in the given line, according to the tab type
- * in current document.
- */
-export function countIdents(line: string): number {
-	const [useTabs, tabSize] = tabInfo();
-
-	if (useTabs) {
-		let numTabs = 0;
-		let i = 0;
-		while (line[i++] === '\t') ++numTabs;
-		return numTabs;
-
-	} else {
-		let numSpaces = 0;
-		let i = 0;
-		while (line[i++] === ' ') ++numSpaces;
-		return (numSpaces - (numSpaces % tabSize)) / tabSize;
-	}
-};
-
-/**
  * Returns the comment prefix string, among the supported prefixes.
  */
-export function commentPrefix(line: string): string {
+ export function commentPrefix(line: string): string {
 	for (const prefix of ['//!', '///', '//']) {
 		if (line.startsWith(prefix)) {
 			return prefix;
 		}
 	}
 	return '';
+};
+
+/**
+ * Returns the prefix of a line, including identation and comment slashes.
+ */
+export function linePrefix(line: string): string {
+	const [useTabs, tabSize] = tabInfo();
+
+	if (useTabs) {
+		let numTabs = 0;
+		let i = 0;
+		while (line[i++] === '\t') ++numTabs;
+
+		return '\t'.repeat(numTabs) + commentPrefix(line) + ' ';
+
+	} else {
+		let numSpaces = 0;
+		let i = 0;
+		while (line[i++] === ' ') ++numSpaces;
+		let numTabs = (numSpaces - (numSpaces % tabSize)) / tabSize;
+
+		return ' '.repeat(numTabs * tabSize) + commentPrefix(line) + ' ';
+	}
 };

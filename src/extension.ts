@@ -1,27 +1,42 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import * as util from './util';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
+function getWords(document: vscode.TextDocument, selection: vscode.Selection): string[] {
+	let words: string[] = [];
+	for (let i = selection.start.line; i <= selection.end.line; ++i) {
+		const line = document.lineAt(i).text.trimLeft();
+		if (!line.startsWith('//')) {
+			vscode.window.showErrorMessage(`Line ${i + 1} is not a comment.`);
+			return [];
+		}
+
+		words = words.concat(line.split(/\s+/).map((word, idx) => {
+			if (idx === 0) {
+				const commPrefix = util.commentPrefix(word);
+				const wordNoPrefix = word.substr(commPrefix.length);
+				return wordNoPrefix;
+			}
+			return word;
+		}).filter(word => word.length > 0));
+	}
+	return words;
+}
+
 export function activate(context: vscode.ExtensionContext) {
+	let disposable = vscode.commands.registerCommand('comment-formatter.formatComment', () => {
+		const editor = vscode.window.activeTextEditor;
+		if (editor) {
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "comment-formatter" is now active!');
+			const document = editor.document;
+			const words = getWords(document, editor.selection);
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('comment-formatter.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
+			const numIdent = util.countIdents(document.lineAt(editor.selection.start.line).text);
 
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Comment Formatter!');
+			console.log(numIdent, words);
+		}
 	});
 
 	context.subscriptions.push(disposable);
-}
+};
 
-// this method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() {};

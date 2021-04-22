@@ -10,14 +10,14 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:comment-formatter.helloWorld"
+		"onCommand:comment-formatter.formatComment"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "comment-formatter.helloWorld",
-				"title": "Hello World"
+				"command": "comment-formatter.formatComment",
+				"title": "Format comment"
 			}
 		]
 	},
@@ -35,17 +35,17 @@
 	"devDependencies": {
 		"@types/vscode": "^1.55.0",
 		"@types/glob": "^7.1.3",
-		"@types/mocha": "^8.0.4",
-		"@types/node": "^12.11.7",
-		"eslint": "^7.19.0",
-		"@typescript-eslint/eslint-plugin": "^4.14.1",
-		"@typescript-eslint/parser": "^4.14.1",
+		"@types/mocha": "^8.2.2",
+		"@types/node": "^14.14.41",
+		"eslint": "^7.24.0",
+		"@typescript-eslint/eslint-plugin": "^4.22.0",
+		"@typescript-eslint/parser": "^4.22.0",
 		"glob": "^7.1.6",
-		"mocha": "^8.2.1",
-		"typescript": "^4.1.3",
-		"vscode-test": "^1.5.0",
-		"ts-loader": "^8.0.14",
-		"webpack": "^5.19.0",
-		"webpack-cli": "^4.4.0"
+		"mocha": "^8.3.2",
+		"typescript": "^4.2.4",
+		"vscode-test": "^1.5.2",
+		"ts-loader": "^9.1.0",
+		"webpack": "^5.35.0",
+		"webpack-cli": "^4.6.0"
 	}
 }

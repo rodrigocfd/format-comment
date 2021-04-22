@@ -1,22 +1,29 @@
 {
-	"name": "comment-formatter",
-	"displayName": "Comment Formatter",
-	"description": "Formats comments to fit the given number of columns.",
+	"name": "format-comment",
+	"displayName": "Format Comment",
+	"description": "Formats comments to fit 80 chars max on each line.",
 	"version": "0.0.1",
+	"icon": "icon.png",
 	"engines": {
 		"vscode": "^1.55.0"
 	},
 	"categories": [
-		"Other"
+		"Formatters"
 	],
+	"license": "MIT",
+	"publisher": "rodrigocfd",
+	"repository": {
+		"url": "https://github.com/rodrigocfd/format-comment.git",
+		"type": "git"
+	},
 	"activationEvents": [
-		"onCommand:comment-formatter.formatComment"
+		"onCommand:format-comment.formatComment"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "comment-formatter.formatComment",
+				"command": "format-comment.formatComment",
 				"title": "Format comment"
 			}
 		]

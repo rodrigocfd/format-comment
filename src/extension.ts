@@ -2,15 +2,20 @@ import * as vscode from 'vscode';
 import * as util from './util';
 
 export function activate(context: vscode.ExtensionContext) {
-	let disposable = vscode.commands.registerCommand('comment-formatter.formatComment', () => {
+	let disposable = vscode.commands.registerCommand('format-comment.formatComment', () => {
 		const editor = vscode.window.activeTextEditor;
 		if (editor) {
 			const document = editor.document;
 			const idxFirstLine = editor.selection.start.line;
 			const idxLastLine = editor.selection.end.line;
 			const linePrefix = util.linePrefix(document.lineAt(idxFirstLine).text);
-			const paragraphs = getParagraphs(document, idxFirstLine, idxLastLine);
 			const maxLen = 80;
+
+			const paragraphs = getParagraphs(document, idxFirstLine, idxLastLine);
+			if (paragraphs instanceof Error) {
+				vscode.window.showErrorMessage(paragraphs.message);
+				return;
+			}
 
 			let finalLines: string[] = [];
 			for (let i = 0; i < paragraphs.length; ++i) {
@@ -28,7 +33,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 			editor.selection = new vscode.Selection(
 				new vscode.Position(idxFirstLine, finalLines[0].indexOf('//')),
-				new vscode.Position(idxFirstLine + finalLines.length,
+				new vscode.Position(idxFirstLine + finalLines.length - 1,
 					finalLines[finalLines.length - 1].length),
 			);
 		}
@@ -42,15 +47,16 @@ export function deactivate() {};
 /**
  * Splits the selected lines into paragraphs, each one containing words.
  */
- function getParagraphs(doc: vscode.TextDocument, idxFirstLine: number, idxLastLine: number): string[][] {
+ function getParagraphs(
+	 doc: vscode.TextDocument, idxFirstLine: number, idxLastLine: number): string[][] | Error
+{
 	let paragraphs: string[][] = [];
 	let currentParagraph: string[] = [];
 
 	for (let i = idxFirstLine; i <= idxLastLine; ++i) {
 		const line = doc.lineAt(i).text.trimLeft();
 		if (!line.startsWith('//')) {
-			vscode.window.showErrorMessage(`Line ${i + 1} is not a comment.`);
-			return [];
+			return new Error(`Format comment failed: line ${i + 1} is not a comment.`);
 		}
 
 		const words = util.splitWords(line).map((word, idx) => {

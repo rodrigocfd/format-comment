@@ -34,18 +34,20 @@ export function activate(context: vscode.ExtensionContext) {
 			const idxLastLine = editor.selection.end.line;
 			const words = getWords(document, idxFirstLine, idxLastLine);
 			const linePrefix = util.linePrefix(document.lineAt(idxFirstLine).text);
+			const eol = util.eol(document);
 
+			let finalStr = '';
 			for (const word of words) {
-				console.log(linePrefix + word);
+				finalStr += linePrefix + word + eol;
 			}
 
-			// let targetSel = new vscode.Selection(
-			// 	new vscode.Position(idxFirstLine, 0),
-			// 	new vscode.Position(idxLastLine, document.lineAt(idxLastLine).text.length),
-			// );
-			// editor.edit(b => {
-			// 	b.replace(targetSel, 'xxxx' + document.eol + 'xxx');
-			// });
+			console.log(finalStr);
+
+			let targetSel = new vscode.Selection(
+				new vscode.Position(idxFirstLine, 0),
+				new vscode.Position(idxLastLine, document.lineAt(idxLastLine).text.length),
+			);
+			editor.edit(b => b.replace(targetSel, finalStr));
 		}
 	});
 

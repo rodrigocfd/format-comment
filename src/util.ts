@@ -47,3 +47,10 @@ export function linePrefix(line: string): string {
 		return ' '.repeat(numTabs * tabSize) + commentPrefix(line) + ' ';
 	}
 };
+
+/**
+ * Returns \n or \r\n, according to the document.
+ */
+export function eol(document: vscode.TextDocument): string {
+	return document.eol === vscode.EndOfLine.LF ? '\n' : '\r\n';
+};

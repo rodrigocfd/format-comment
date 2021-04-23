@@ -81,6 +81,20 @@ export function linePrefix(line: string): string {
 };
 
 /**
+ * Tells whether the two arrays contain the same lines.
+ */
+export function areLinesEqual(a: string[], b: string[]): boolean {
+	if (a.length !== b.length) return false;
+
+	for (let i = 0; i < a.length; ++i) {
+		if (a[i] !== b[i].trimLeft()) {
+			return false;
+		}
+	}
+	return true;
+};
+
+/**
  * Returns \n or \r\n, according to the document.
  */
 export function eol(document: vscode.TextDocument): string {

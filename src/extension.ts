@@ -11,11 +11,12 @@ export function activate(context: vscode.ExtensionContext) {
 			const linePrefix = util.linePrefix(document.lineAt(idxFirstLine).text);
 			const maxLen = 80;
 
-			const paragraphs = getParagraphs(document, idxFirstLine, idxLastLine);
-			if (paragraphs instanceof Error) {
-				vscode.window.showErrorMessage(paragraphs.message);
+			const initialLines = getSelectedLines(document, idxFirstLine, idxLastLine);
+			if (initialLines instanceof Error) {
+				vscode.window.showErrorMessage(initialLines.message);
 				return;
 			}
+			const paragraphs = separateLinesInParagraphs(initialLines);
 
 			let finalLines: string[] = [];
 			for (let i = 0; i < paragraphs.length; ++i) {
@@ -25,11 +26,13 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 			}
 
-			let targetSel = new vscode.Selection(
-				new vscode.Position(idxFirstLine, 0),
-				new vscode.Position(idxLastLine, document.lineAt(idxLastLine).text.length),
-			);
-			editor.edit(b => b.replace(targetSel, finalLines.join(util.eol(document))));
+			if (!util.areLinesEqual(initialLines, finalLines)) {
+				let targetSel = new vscode.Selection(
+					new vscode.Position(idxFirstLine, 0),
+					new vscode.Position(idxLastLine, document.lineAt(idxLastLine).text.length),
+				);
+				editor.edit(b => b.replace(targetSel, finalLines.join(util.eol(document))));
+			}
 
 			editor.selection = new vscode.Selection(
 				new vscode.Position(idxFirstLine, finalLines[0].indexOf('//')),
@@ -45,13 +48,12 @@ export function activate(context: vscode.ExtensionContext) {
 export function deactivate() {};
 
 /**
- * Splits the selected lines into paragraphs, each one containing words.
+ * Retrieves the selected lines. Returns Error if one of them is not a comment.
  */
- function getParagraphs(
-	 doc: vscode.TextDocument, idxFirstLine: number, idxLastLine: number): string[][] | Error
+function getSelectedLines(
+	doc: vscode.TextDocument, idxFirstLine: number, idxLastLine: number): string[] | Error
 {
-	let paragraphs: string[][] = [];
-	let currentParagraph: string[] = [];
+	let lines: string[] = [];
 
 	for (let i = idxFirstLine; i <= idxLastLine; ++i) {
 		const line = doc.lineAt(i).text.trimLeft();
@@ -59,6 +61,20 @@ export function deactivate() {};
 			return new Error(`Format comment failed: line ${i + 1} is not a comment.`);
 		}
 
+		lines.push(line);
+	}
+
+	return lines;
+}
+
+/**
+ * Splits the selected lines into paragraphs, each one containing words.
+ */
+function separateLinesInParagraphs(lines: string[]): string[][] {
+	let paragraphs: string[][] = [];
+	let currentParagraph: string[] = [];
+
+	for (const line of lines) {
 		const words = util.splitWords(line).map((word, idx) => {
 			if (idx === 0) {
 				const slashesPrefix = util.commentSlashes(word);

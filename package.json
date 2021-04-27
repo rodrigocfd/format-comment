@@ -24,7 +24,7 @@
 		"commands": [
 			{
 				"command": "format-comment.formatComment",
-				"title": "Format comment"
+				"title": "Format Comment"
 			}
 		]
 	},

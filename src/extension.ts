@@ -59,6 +59,9 @@ function getSelectedLines(
 		const line = doc.lineAt(i).text.trimLeft();
 		if (!line.startsWith('//')) {
 			return new Error(`Format comment failed: line ${i + 1} is not a comment.`);
+		} else if (line.startsWith('// *') || line.startsWith('/// *')) {
+			return new Error(`Format comment failed: line ${i + 1} appears to be a markdown list, `
+				+ `which can't be properly formatted.`);
 		}
 
 		lines.push(line);

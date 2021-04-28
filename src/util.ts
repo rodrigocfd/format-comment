@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 /**
- * Splits a line into words.
+ * Splits a line into words. Markdown links are considered a single word.
  */
 export function splitWords(line: string): string[] {
 	const tokens = line.split(/\s+/);
@@ -31,8 +31,8 @@ export function splitWords(line: string): string[] {
 };
 
 /**
- * In the current document, retrieves whether tab is being used, and the tab
- * size.
+ * In the current document, retrieves whether tab is being used for identation,
+ * and the tab size.
  */
 export function tabInfo(): [boolean, number] {
 	const editorOpts = vscode.window.activeTextEditor!.options;

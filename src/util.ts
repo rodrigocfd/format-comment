@@ -44,9 +44,9 @@ export function tabInfo(): [boolean, number] {
 };
 
 /**
- * Returns the comment prefix slashes, among the supported prefixes.
+ * Returns the comment prefix slashes being used, among the supported prefixes.
  */
- export function commentSlashes(line: string): string {
+ export function discoverCommentSlashes(line: string): string {
 	const lineTr = line.trimLeft()
 	for (const prefix of ['//!', '///', '//']) {
 		if (lineTr.startsWith(prefix)) {
@@ -61,7 +61,7 @@ export function tabInfo(): [boolean, number] {
  */
 export function linePrefix(line: string): string {
 	const [useTabs, tabSize] = tabInfo();
-	const slashes = commentSlashes(line);
+	const slashes = discoverCommentSlashes(line);
 
 	if (useTabs) {
 		let numTabs = 0;

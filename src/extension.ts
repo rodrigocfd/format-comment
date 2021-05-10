@@ -57,9 +57,9 @@ function getSelectedLines(
 
 	for (let i = idxFirstLine; i <= idxLastLine; ++i) {
 		const line = doc.lineAt(i).text.trimLeft();
-		if (!line.startsWith('//')) {
+		if (line.search(/^\/\/[/!]?/g) === -1) {
 			return new Error(`Format comment failed: line ${i + 1} is not a comment.`);
-		} else if (line.startsWith('// *') || line.startsWith('/// *') || line.startsWith('//! *')) {
+		} else if (line.search(/^\/\/[/!]?\s*\*\s+/g) !== -1) {
 			return new Error(`Format comment failed: line ${i + 1} appears to be a markdown list, `
 				+ `which can't be properly formatted.`);
 		}
@@ -80,7 +80,7 @@ function separateLinesInParagraphs(lines: string[]): string[][] {
 	for (const line of lines) {
 		const words = util.splitWords(line).map((word, idx) => {
 			if (idx === 0) {
-				const slashesPrefix = util.commentSlashes(word);
+				const slashesPrefix = util.discoverCommentSlashes(word);
 				const wordNoPrefix = word.substr(slashesPrefix.length);
 				return wordNoPrefix;
 			}

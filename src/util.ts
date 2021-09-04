@@ -48,7 +48,7 @@ export function tabInfo(): [boolean, number] {
  */
  export function discoverCommentSlashes(line: string): string {
 	const lineTr = line.trimLeft()
-	for (const prefix of ['//!', '///', '//']) {
+	for (const prefix of ['//!', '///', '//', '#']) {
 		if (lineTr.startsWith(prefix)) {
 			return prefix;
 		}

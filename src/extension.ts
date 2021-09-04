@@ -34,8 +34,10 @@ export function activate(context: vscode.ExtensionContext) {
 				editor.edit(b => b.replace(targetSel, finalLines.join(util.eol(document))));
 			}
 
+			const slashesPrefix = util.discoverCommentSlashes(finalLines[0]);
+
 			editor.selection = new vscode.Selection(
-				new vscode.Position(idxFirstLine, finalLines[0].indexOf('//')),
+				new vscode.Position(idxFirstLine, finalLines[0].indexOf(slashesPrefix)),
 				new vscode.Position(idxFirstLine + finalLines.length - 1,
 					finalLines[finalLines.length - 1].length),
 			);
@@ -57,11 +59,11 @@ function getSelectedLines(
 
 	for (let i = idxFirstLine; i <= idxLastLine; ++i) {
 		const line = doc.lineAt(i).text.trimLeft();
-		if (line.search(/^\/\/[/!]?/g) === -1) {
+		if (line.search(/^(\/\/[/!]|#)?/g) === -1) {
 			return new Error(`Format comment failed: line ${i + 1} is not a comment.`);
-		} else if (line.search(/^\/\/[/!]?\s*\*\s+/g) !== -1) {
+		} else if (line.search(/^(\/\/[/!]?|#)\s*\*\s+/g) !== -1) {
 			return new Error(`Format comment failed: line ${i + 1} appears to be a markdown list, `
-				+ `which can't be properly formatted.`);
+				+ `which cannot be properly formatted.`);
 		}
 
 		lines.push(line);

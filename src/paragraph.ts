@@ -2,13 +2,13 @@ import * as ident from './ident';
 
 export interface Paragraph {
 	lines: string[],
-	isCode: boolean,
+	canFormat: boolean,
 };
 
 function newParagraph(): Paragraph {
 	return {
 		lines: [],
-		isCode: false,
+		canFormat: true,
 	};
 }
 
@@ -25,7 +25,7 @@ export function parse(cleanLines: string[]): Paragraph[] {
 
 			currentParagraph = newParagraph(); // start new paragraph
 			currentParagraph.lines.push(line); // begin with current line
-			currentParagraph.isCode = true;
+			currentParagraph.canFormat = false;
 
 			++idx;
 			while (idx < cleanLines.length) {
@@ -60,18 +60,17 @@ export function produceFinal(
 	paragraphs: Paragraph[],
 	origIdent: ident.Ident, origCommPrefix: string, maxLen: number): string[]
 {
-	// const firstIdent = ident.fromLine(paragraphs[0].lines[0].original);
-	// const firstCommPrefix = ident.getCommentPrefix(paragraphs[0].lines[0].original) as string;
+	if (origCommPrefix === '*') origCommPrefix = ' *'; // prefix asterisk
 
 	const lenPrefix = ident.calcLength(origIdent) + origCommPrefix.length + 1;
 	const desiredLen = maxLen - lenPrefix;
 
-	let produced: string[] = [];
+	let produced: string[] = []; // lines ready to be written to user
 
 	for (let i = 0; i < paragraphs.length; ++i) {
 		const parag = paragraphs[i];
 
-		if (parag.isCode) { // code blocks won't be formatted
+		if (!parag.canFormat) { // just pass all the lines as they are
 			for (const codeLine of parag.lines) {
 				produced.push(ident.produce(origIdent) + origCommPrefix + ' ' + codeLine);
 			}

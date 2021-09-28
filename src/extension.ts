@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import * as block from './block';
 import * as ident from './ident';
 import * as line from './line';
+import * as paragraph from './paragraph';
 
 export function activate(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('format-comment.formatComment', () => {
@@ -23,8 +23,8 @@ export function activate(context: vscode.ExtensionContext) {
 		const origIdent = ident.fromLine(origLines[0]);
 		const origCommPrefix = ident.getCommentPrefix(origLines[0]) as string;
 
-		const paragraphs = block.parse(cleanLines);
-		const newLines = block.produceFinal(paragraphs, origIdent, origCommPrefix, maxLen);
+		const paragraphs = paragraph.parse(cleanLines);
+		const newLines = paragraph.produceFinal(paragraphs, origIdent, origCommPrefix, maxLen);
 
 		if (!line.equals(origLines, newLines)) { // replace only if lines are different
 			let targetSel = new vscode.Selection(

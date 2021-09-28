@@ -32,13 +32,20 @@ export function fromLine(line: string): Ident {
 export function getCommentPrefix(line: string): string | Error {
 	const trimmed = line.trimLeft();
 
-	for (const validPrefix of ['///', '//!', '//', '#', '*']) {
-		if (trimmed.startsWith(validPrefix)) {
-			return validPrefix === '*' ? ' *' : validPrefix; // asterisk is prefixed
+	for (const blockDelim of ['/*', '*/', '**/']) {
+		if (trimmed.startsWith(blockDelim)) {
+			return new Error(
+				'Invalid text comment line. Do not select the top/bottom delimiter.');
 		}
 	}
 
-	return new Error('Invalid text comment line.');
+	for (const validPrefix of ['///', '//!', '//', '#', '*']) {
+		if (trimmed.startsWith(validPrefix)) {
+			return validPrefix;
+		}
+	}
+
+	return new Error('Invalid comment line.');
 };
 
 export function produce(ident: Ident): string {

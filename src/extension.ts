@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import Paragraph from './Paragraph';
-import Prefix from './Prefix';
-import RawLines from './RawLines';
+import * as block from './block';
+import * as ident from './ident';
+import * as line from './line';
 
 export function activate(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('format-comment.formatComment', () => {
@@ -13,32 +13,33 @@ export function activate(context: vscode.ExtensionContext) {
 		const idxFirstLine = editor.selection.start.line;
 		const idxLastLine = editor.selection.end.line;
 
-		const rawLines = RawLines.Read(document, idxFirstLine, idxLastLine);
-		if (rawLines instanceof Error) {
-			vscode.window.showErrorMessage(rawLines.message, { modal: true });
+		const cleanLines = line.parseAndClean(document, idxFirstLine, idxLastLine);
+		if (cleanLines instanceof Error) {
+			vscode.window.showErrorMessage(cleanLines.message, { modal: true });
 			return;
 		}
 
-		const prefix = Prefix.FromLine(document.lineAt(idxFirstLine).text) as Prefix;
+		const origLines = line.parseRaw(document, idxFirstLine, idxLastLine);
+		const origIdent = ident.fromLine(origLines[0]);
+		const origCommPrefix = ident.getCommentPrefix(origLines[0]) as string;
 
-		const paragraphs = Paragraph.FromRawLines(rawLines);
-		Paragraph.RearrangeWords(paragraphs, prefix, maxLen);
+		const paragraphs = block.parse(cleanLines);
+		const newLines = block.produceFinal(paragraphs, origIdent, origCommPrefix, maxLen);
 
-		const finalLines = Paragraph.ToLines(paragraphs, prefix);
-
-		if (!rawLines.areEqualToLines(finalLines, prefix)) { // replace only if lines are different
+		if (!line.equals(origLines, newLines)) { // replace only if lines are different
 			let targetSel = new vscode.Selection(
 				new vscode.Position(idxFirstLine, 0),
 				new vscode.Position(idxLastLine, document.lineAt(idxLastLine).text.length),
 			);
 			editor.edit(b => b.replace(targetSel,
-				finalLines.join(document.eol === vscode.EndOfLine.LF ? '\n' : '\r\n') ));
+				newLines.join(document.eol === vscode.EndOfLine.LF ? '\n' : '\r\n') ));
 		}
 
+		const newFirstIdent = ident.fromLine(newLines[0]);
 		editor.selection = new vscode.Selection(
-			new vscode.Position(idxFirstLine, finalLines[0].indexOf(prefix.commentPrefix)),
-			new vscode.Position(idxFirstLine + finalLines.length - 1,
-				finalLines[finalLines.length - 1].length),
+			new vscode.Position(idxFirstLine, ident.produce(newFirstIdent).length),
+			new vscode.Position(idxFirstLine + newLines.length - 1,
+				newLines[newLines.length - 1].length),
 		);
 	});
 

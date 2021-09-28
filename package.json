@@ -2,7 +2,7 @@
 	"name": "format-comment",
 	"displayName": "Format Comment",
 	"description": "Formats comments to fit 80 chars max on each line.",
-	"version": "0.0.5",
+	"version": "0.0.6",
 	"icon": "icon.png",
 	"engines": {
 		"vscode": "^1.60.0"

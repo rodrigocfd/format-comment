@@ -1,139 +1,48 @@
 import * as vscode from 'vscode';
-import * as util from './util';
+import Paragraph from './Paragraph';
+import Prefix from './Prefix';
+import RawLines from './RawLines';
 
 export function activate(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('format-comment.formatComment', () => {
 		const editor = vscode.window.activeTextEditor;
-		if (editor) {
-			const document = editor.document;
-			const idxFirstLine = editor.selection.start.line;
-			const idxLastLine = editor.selection.end.line;
-			const linePrefix = util.linePrefix(document.lineAt(idxFirstLine).text);
-			const maxLen = 80;
+		if (!editor) return;
 
-			const initialLines = getSelectedLines(document, idxFirstLine, idxLastLine);
-			if (initialLines instanceof Error) {
-				vscode.window.showErrorMessage(initialLines.message);
-				return;
-			}
-			const paragraphs = separateLinesInParagraphs(initialLines);
+		const maxLen = 80;
+		const document = editor.document;
+		const idxFirstLine = editor.selection.start.line;
+		const idxLastLine = editor.selection.end.line;
 
-			let finalLines: string[] = [];
-			for (let i = 0; i < paragraphs.length; ++i) {
-				finalLines = finalLines.concat(assemblyFinalParagraph(editor, paragraphs[i], maxLen));
-				if (i < paragraphs.length - 1) {
-					finalLines.push(linePrefix);
-				}
-			}
-
-			if (!util.areLinesEqual(initialLines, finalLines)) {
-				let targetSel = new vscode.Selection(
-					new vscode.Position(idxFirstLine, 0),
-					new vscode.Position(idxLastLine, document.lineAt(idxLastLine).text.length),
-				);
-				editor.edit(b => b.replace(targetSel, finalLines.join(util.eol(document))));
-			}
-
-			const slashesPrefix = util.discoverCommentSlashes(finalLines[0]);
-
-			editor.selection = new vscode.Selection(
-				new vscode.Position(idxFirstLine, finalLines[0].indexOf(slashesPrefix)),
-				new vscode.Position(idxFirstLine + finalLines.length - 1,
-					finalLines[finalLines.length - 1].length),
-			);
+		const rawLines = RawLines.Read(document, idxFirstLine, idxLastLine);
+		if (rawLines instanceof Error) {
+			vscode.window.showErrorMessage(rawLines.message, { modal: true });
+			return;
 		}
+
+		const prefix = Prefix.FromLine(document.lineAt(idxFirstLine).text) as Prefix;
+
+		const paragraphs = Paragraph.FromRawLines(rawLines);
+		Paragraph.RearrangeWords(paragraphs, prefix, maxLen);
+
+		const finalLines = Paragraph.ToLines(paragraphs, prefix);
+
+		if (!rawLines.areEqualToLines(finalLines, prefix)) { // replace only if lines are different
+			let targetSel = new vscode.Selection(
+				new vscode.Position(idxFirstLine, 0),
+				new vscode.Position(idxLastLine, document.lineAt(idxLastLine).text.length),
+			);
+			editor.edit(b => b.replace(targetSel,
+				finalLines.join(document.eol === vscode.EndOfLine.LF ? '\n' : '\r\n') ));
+		}
+
+		editor.selection = new vscode.Selection(
+			new vscode.Position(idxFirstLine, finalLines[0].indexOf(prefix.commentPrefix)),
+			new vscode.Position(idxFirstLine + finalLines.length - 1,
+				finalLines[finalLines.length - 1].length),
+		);
 	});
 
 	context.subscriptions.push(disposable);
 };
 
 export function deactivate() {};
-
-/**
- * Retrieves the selected lines. Returns Error if one of them is not a comment.
- */
-function getSelectedLines(
-	doc: vscode.TextDocument, idxFirstLine: number, idxLastLine: number): string[] | Error
-{
-	let lines: string[] = [];
-
-	for (let i = idxFirstLine; i <= idxLastLine; ++i) {
-		const line = doc.lineAt(i).text.trimLeft();
-		if (line.search(/^(\/\/[/!]|#)?/g) === -1) {
-			return new Error(`Format comment failed: line ${i + 1} is not a comment.`);
-		} else if (line.search(/^(\/\/[/!]?|#)\s*\*\s+/g) !== -1) {
-			return new Error(`Format comment failed: line ${i + 1} appears to be a markdown list, `
-				+ `which cannot be properly formatted.`);
-		}
-
-		lines.push(line);
-	}
-
-	return lines;
-}
-
-/**
- * Splits the selected lines into paragraphs, each one containing words.
- */
-function separateLinesInParagraphs(lines: string[]): string[][] {
-	let paragraphs: string[][] = [];
-	let currentParagraph: string[] = [];
-
-	for (const line of lines) {
-		const words = util.splitWords(line).map((word, idx) => {
-			if (idx === 0) {
-				const slashesPrefix = util.discoverCommentSlashes(word);
-				const wordNoPrefix = word.substr(slashesPrefix.length);
-				return wordNoPrefix;
-			}
-			return word;
-		}).filter(word => word.length > 0);
-
-		if (words.length === 0) {
-			paragraphs.push(currentParagraph);
-			currentParagraph = [];
-		}
-
-		currentParagraph = currentParagraph.concat(words);
-	}
-
-	paragraphs.push(currentParagraph);
-	return paragraphs.filter(p => p.length > 0);
-}
-
-/**
- * From an array of words, returns the lines of a formatted comment block.
- */
-function assemblyFinalParagraph(editor: vscode.TextEditor, words: string[], maxLen: number): string[] {
-	const document = editor.document;
-	const idxFirstLine = editor.selection.start.line;
-	const linePrefix = util.linePrefix(document.lineAt(idxFirstLine).text);
-
-	let finalLines: string[] = [];
-	let i = 0;
-	while (i < words.length) {
-		let curLine = linePrefix;
-		let k = i;
-		for (;;) {
-			curLine += ' ' + words[k];
-			const renderLen = curLine.replace(/\t/g, ' '.repeat(4)).length;
-			if (k >= words.length || renderLen > maxLen) break;
-			++k;
-		}
-
-		let numWords = k - i + 1;
-		if (numWords === 1) {
-			finalLines.push(curLine);
-		} else {
-			--numWords;
-			curLine = linePrefix;
-			for (let n = 0; n < numWords; ++n) {
-				curLine += ' ' + words[i + n];
-			}
-			finalLines.push(curLine);
-		}
-
-		i += numWords;
-	}
-	return finalLines;
-}

@@ -30,7 +30,7 @@ export function fromLine(line: string): Ident {
 };
 
 export function getCommentPrefix(line: string): string | Error {
-	const trimmed = line.trimLeft();
+	const trimmed = line.trimStart();
 
 	for (const blockDelim of ['/*', '*/', '**/']) {
 		if (trimmed.startsWith(blockDelim)) {

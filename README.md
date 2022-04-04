@@ -11,3 +11,7 @@ Lines starting with `//`, `///`, `//!`, `#`, or `*` will be formatted.
 ## Example
 
 ![Example](screen.gif)
+
+## License
+
+Licensed under [MIT license](https://opensource.org/licenses/MIT), see [LICENSE.md](LICENSE.md) for details.

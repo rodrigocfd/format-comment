@@ -131,7 +131,7 @@ function splitWords(line: string): string[] {
 				nextWord = tokens[++i];
 			}
 
-			words.push(bigWord.substr(1));
+			words.push(bigWord.substring(1));
 			++i;
 		}
 	}

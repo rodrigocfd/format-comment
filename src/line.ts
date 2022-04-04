@@ -28,8 +28,8 @@ export function parseAndClean(
 			return new Error(`Format comment failed at line ${i + 1}:\n${commPrefix.message}`);
 		}
 
-		lines.push(original.trimLeft()
-			.substr(commPrefix.length)
+		lines.push(original.trimStart()
+			.substring(commPrefix.length)
 			.trim());
 	}
 

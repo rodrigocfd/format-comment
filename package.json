@@ -1,8 +1,8 @@
 {
 	"name": "format-comment",
 	"displayName": "Format Comment",
-	"description": "Formats comments to fit 80 chars max on each line.",
-	"version": "0.0.6",
+	"description": "Formats comments to fit a maximum number of chars on each line.",
+	"version": "0.0.7",
 	"icon": "icon.png",
 	"engines": {
 		"vscode": "^1.60.0"
@@ -26,7 +26,17 @@
 				"command": "format-comment.formatComment",
 				"title": "Format Comment"
 			}
-		]
+		],
+		"configuration": {
+			"title": "Settings",
+			"properties": {
+				"format-comment.settings.maxLength": {
+					"type": "number",
+					"default": 80,
+					"description": "Maximum length of the comment line."
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run package",

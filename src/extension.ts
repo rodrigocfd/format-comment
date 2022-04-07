@@ -8,7 +8,7 @@ export function activate(context: vscode.ExtensionContext) {
 		const editor = vscode.window.activeTextEditor;
 		if (!editor) return;
 
-		const maxLen = 80;
+		const maxLen = vscode.workspace.getConfiguration().get('format-comment.settings.maxLength') as number;
 		const document = editor.document;
 		const idxFirstLine = editor.selection.start.line;
 		const idxLastLine = editor.selection.end.line;

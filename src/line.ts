@@ -25,7 +25,13 @@ export function parseAndClean(
 
 		const commPrefix = ident.getCommentPrefix(original);
 		if (commPrefix instanceof Error) {
-			return new Error(`Format comment failed at line ${i + 1}:\n${commPrefix.message}`);
+			if (i < idxLastLine) {
+				// Throw an error if not the last line
+				return new Error(`Format comment failed at line ${i + 1}:\n${commPrefix.message}`);
+			} else {
+				// Otherwise, ignore the last line and return the list of already processed lines
+				return lines;
+			}
 		}
 
 		lines.push(original.trimStart()
@@ -37,7 +43,9 @@ export function parseAndClean(
 };
 
 export function equals(origLines: string[], newLines: string[]): boolean {
-	if (origLines.length !== newLines.length) return false;
+	if (origLines.length !== newLines.length) {
+		return false;
+	}
 
 	for (let i = 0; i < origLines.length; ++i) {
 		if (origLines[i] !== newLines[i]) {

@@ -6,7 +6,9 @@ import * as paragraph from './paragraph';
 export function activate(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('format-comment.formatComment', () => {
 		const editor = vscode.window.activeTextEditor;
-		if (!editor) return;
+		if (!editor) {
+			return;
+		}
 
 		const maxLen = vscode.workspace.getConfiguration().get('format-comment.settings.maxLength') as number;
 		const document = editor.document;
@@ -19,7 +21,10 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 
-		const origLines = line.parseRaw(document, idxFirstLine, idxLastLine);
+		// Update last line index in case last line was ignored
+		const idxLastLineFinal = idxFirstLine + cleanLines.length - 1;
+
+		const origLines = line.parseRaw(document, idxFirstLine, idxLastLineFinal);
 		const origIdent = ident.fromLine(origLines[0]);
 		const origCommPrefix = ident.getCommentPrefix(origLines[0]) as string;
 
@@ -29,7 +34,7 @@ export function activate(context: vscode.ExtensionContext) {
 		if (!line.equals(origLines, newLines)) { // replace only if lines are different
 			let targetSel = new vscode.Selection(
 				new vscode.Position(idxFirstLine, 0),
-				new vscode.Position(idxLastLine, document.lineAt(idxLastLine).text.length),
+				new vscode.Position(idxLastLineFinal, document.lineAt(idxLastLineFinal).text.length),
 			);
 			editor.edit(b => b.replace(targetSel,
 				newLines.join(document.eol === vscode.EndOfLine.LF ? '\n' : '\r\n') ));

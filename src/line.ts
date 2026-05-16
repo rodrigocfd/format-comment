@@ -9,7 +9,7 @@ export function parseRaw(
 {
 	const lines = new Array<string>(idxLastLine - idxFirstLine + 1); // prealloc
 	for (let i = idxFirstLine; i <= idxLastLine; ++i) {
-		lines[i] = doc.lineAt(i).text;
+		lines[i - idxFirstLine] = doc.lineAt(i).text;
 	}
 	return lines;
 };
@@ -36,7 +36,7 @@ export function parseAndClean(
 			}
 		}
 
-		lines[i] = original.trimStart()
+		lines[i - idxFirstLine] = original.trimStart()
 			.substring(commPrefix.length)
 			.trim();
 	}

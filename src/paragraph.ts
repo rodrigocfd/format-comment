@@ -60,7 +60,9 @@ export function produceFinal(
 	paragraphs: Paragraph[],
 	origIdent: ident.Ident, origCommPrefix: string, maxLen: number): string[]
 {
-	if (origCommPrefix === '*') origCommPrefix = ' *'; // prefix asterisk
+	if (origCommPrefix === '*') {
+		origCommPrefix = ' *'; // prefix asterisk
+	}
 
 	const lenPrefix = ident.calcLength(origIdent) + origCommPrefix.length + 1;
 	const desiredLen = maxLen - lenPrefix;

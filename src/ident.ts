@@ -18,12 +18,16 @@ export function fromLine(line: string): Ident {
 	if (ident.useSpaces) {
 		let numSpaces = 0;
 		let i = 0;
-		while (line[i++] === ' ') ++numSpaces;
+		while (line[i++] === ' ') {
+			++numSpaces;
+		}
 		ident.numTabs = (numSpaces - (numSpaces % ident.tabWidth)) / ident.tabWidth;
 
 	} else {
 		let i = 0;
-		while (line[i++] === '\t') ++ident.numTabs;
+		while (line[i++] === '\t') {
+			++ident.numTabs;
+		}
 	}
 
 	return ident;

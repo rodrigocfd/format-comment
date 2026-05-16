@@ -2,7 +2,7 @@
 	"name": "format-comment",
 	"displayName": "Format Comment",
 	"description": "Formats comments to fit a maximum number of chars on each line.",
-	"version": "0.0.8",
+	"version": "0.0.9",
 	"author": {
 		"name": "Rodrigo César de Freitas Dias",
 		"email": "rcesar@gmail.com"
@@ -51,7 +51,7 @@
 		"test-watch": "tsc -watch -p ./",
 		"pretest": "npm run test-compile && npm run lint",
 		"lint": "eslint src --ext ts",
-		"test": "node ./out/test/runTest.js"
+		"test": "node ./out/test/extension.test.js"
 	},
 	"devDependencies": {
 		"@types/vscode": "^1.60.0",

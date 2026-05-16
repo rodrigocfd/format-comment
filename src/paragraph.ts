@@ -58,7 +58,10 @@ export function parse(cleanLines: string[]): Paragraph[] {
 
 export function produceFinal(
 	paragraphs: Paragraph[],
-	origIdent: ident.Ident, origCommPrefix: string, maxLen: number): string[]
+	origIdent: ident.Ident,
+	origCommPrefix: string,
+	maxLen: number,
+): string[]
 {
 	if (origCommPrefix === '*') {
 		origCommPrefix = ' *'; // prefix asterisk

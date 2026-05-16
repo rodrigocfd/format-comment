@@ -3,22 +3,24 @@ import * as ident from './ident';
 
 export function parseRaw(
 	doc: vscode.TextDocument,
-	idxFirstLine: number, idxLastLine: number): string[]
+	idxFirstLine: number,
+	idxLastLine: number,
+): string[]
 {
-	let lines: string[] = [];
-
+	const lines = new Array<string>(idxLastLine - idxFirstLine + 1); // prealloc
 	for (let i = idxFirstLine; i <= idxLastLine; ++i) {
-		lines.push(doc.lineAt(i).text);
+		lines[i] = doc.lineAt(i).text;
 	}
-
 	return lines;
 };
 
 export function parseAndClean(
 	doc: vscode.TextDocument,
-	idxFirstLine: number, idxLastLine: number): string[] | Error
+	idxFirstLine: number,
+	idxLastLine: number,
+): string[] | Error
 {
-	let lines: string[] = [];
+	const lines = new Array<string>(idxLastLine - idxFirstLine + 1); // prealloc
 
 	for (let i = idxFirstLine; i <= idxLastLine; ++i) {
 		const original = doc.lineAt(i).text;
@@ -34,9 +36,9 @@ export function parseAndClean(
 			}
 		}
 
-		lines.push(original.trimStart()
+		lines[i] = original.trimStart()
 			.substring(commPrefix.length)
-			.trim());
+			.trim();
 	}
 
 	return lines;

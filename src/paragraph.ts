@@ -114,32 +114,40 @@ export function produceFinal(
 };
 
 function splitWords(line: string): string[] {
-	const tokens = line.trim().split(/\s+/);
+	const words: string[] = [];
+	line = line.trim();
+	let curWord = '';
+	let withinMdLink = false;
 
-	let words: string[] = [];
-	let i = 0;
-	while (i < tokens.length) {
-		const idxOpen = tokens[i].indexOf('[');
-
-		if (idxOpen === -1) {
-			words.push(tokens[i++]);
-
-		} else {
-			let bigWord = '';
-			let nextWord = tokens[i];
-
-			for (;;) {
-				bigWord += ' ' + nextWord;
-				if (i >= tokens.length || nextWord.indexOf(')') !== -1) {
-					break;
-				}
-				nextWord = tokens[++i];
+	for (let i = 0; i < line.length; ++i) {
+		if (!withinMdLink && /\s/.test(line[i])) { // space
+			if (curWord.length > 0) {
+				words.push(curWord);
+				curWord = '';
 			}
-
-			words.push(bigWord.substring(1));
-			++i;
+			continue;
 		}
+
+		if (!withinMdLink && line[i] === '[') { // open markdown link
+			withinMdLink = true;
+		}
+
+		if (withinMdLink && line[i] === ']') { // close markdown link
+			const isLastChar = (i === line.length - 1);
+			if (isLastChar || /\s/.test(line[i + 1])) { // markdown link without parentheses
+				withinMdLink = false;
+			}
+		}
+
+		if (withinMdLink && line[i] === ')') { // close markdown link
+			withinMdLink = false;
+		}
+
+		curWord += line[i];
 	}
 
+	if (curWord.length > 0) {
+		words.push(curWord); // last one
+	}
 	return words;
 }

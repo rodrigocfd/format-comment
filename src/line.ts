@@ -28,10 +28,10 @@ export function parseAndClean(
 		const commPrefix = ident.getCommentPrefix(original);
 		if (commPrefix instanceof Error) {
 			if (i < idxLastLine) {
-				// Throw an error if not the last line
+				// Throw an error if not the last line.
 				return new Error(`Format comment failed at line ${i + 1}:\n${commPrefix.message}`);
 			} else {
-				// Otherwise, ignore the last line and return the list of already processed lines
+				// Otherwise, ignore the last line and return the list of already processed lines.
 				return lines;
 			}
 		}
